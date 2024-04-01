@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Oxygen {
     private final int OXYGEN_PORT = 60000;
-    private final String SERVER_IP = "192.168.68.124";
+    private final String SERVER_IP = "localhost";
     private final int id;
 
     public Oxygen(int id) {
@@ -15,39 +15,31 @@ public class Oxygen {
 
     public void start() {
         try {
-            Socket socket = new Socket("localhost", OXYGEN_PORT);
+            Socket socket = new Socket(SERVER_IP, OXYGEN_PORT);
             System.out.println("Connected to server");
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            Random random = new Random(12345);
-
-            OxygenListenThread listenThread = new OxygenListenThread(socket);
-            listenThread.start(); // Start listening thread
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            Random random = new Random();
 
             Scanner scanner = new Scanner(System.in);
             int m = 0;
             do {
+                System.out.println("Enter the number of oxygen molecules:");
                 m = scanner.nextInt();
                 if (m <= 0)
                     System.out.println("Enter a valid number of oxygen molecules");
             } while (m <= 0);
 
             long startTime = System.currentTimeMillis();
-            int ID = 1;
 
-            while (ID <= m) {
+            for (int ID = 1; ID <= m; ID++) {
                 int randomTime = random.nextInt(1000 - 50) + 50;
+                String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());
+                String request = "O" + ID + ", request, " + timeStamp;
 
-                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
-                String request = "O-" + ID + ", request, " + timeStamp;
-
-                out.writeObject(request);
-                ID++;
-
+                System.out.println(request);
+                out.println(request);
                 Thread.sleep(randomTime);
             }
-
-            // Wait for the listen thread to finish before closing the socket
-            listenThread.join();
 
             long endTime = System.currentTimeMillis();
             System.out.println("OXYGEN THREAD END");
@@ -56,31 +48,6 @@ public class Oxygen {
             socket.close();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        }
-    }
-
-    public class OxygenListenThread extends Thread {
-        protected Socket socket;
-
-        public OxygenListenThread(Socket oxygen) {
-            this.socket = oxygen;
-        }
-
-        public void run() {
-            try {
-                ObjectInputStream inOxygen = new ObjectInputStream(socket.getInputStream());
-                while (true) {
-                    try {
-                        String received = (String) inOxygen.readObject();
-                        System.out.println(received);
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                        return;
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 

@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Hydrogen {
     private final int HYDROGEN_PORT = 50000;
-    private final String SERVER_IP = "192.168.68.124";
+    private final String SERVER_IP = "localhost";
     private final int id;
 
     public Hydrogen(int id) {
@@ -15,39 +15,32 @@ public class Hydrogen {
 
     public void start() {
         try {
-            Socket socket = new Socket("localhost", HYDROGEN_PORT);
+            Socket socket = new Socket(SERVER_IP, HYDROGEN_PORT);
             System.out.println("Connected to server");
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            Random random = new Random(12345);
-
-            HydrogenListenThread listenThread = new HydrogenListenThread(socket);
-            listenThread.start(); // Start listening thread
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            Random random = new Random();
 
             Scanner scanner = new Scanner(System.in);
             int n = 0;
             do {
+                System.out.println("Enter the number of hydrogen molecules:");
+                System.out.flush();
                 n = scanner.nextInt();
                 if (n <= 0)
                     System.out.println("Enter a valid number of hydrogen molecules");
             } while (n <= 0);
 
             long startTime = System.currentTimeMillis();
-            int ID = 1;
 
-            while (ID <= n) {
+            for (int ID = 1; ID <= n; ID++) {
                 int randomTime = random.nextInt(1000 - 50) + 50;
+                String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());
+                String request = "H" + ID + ", request, " + timeStamp;
 
-                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
-                String request = "H-" + ID + ", request, " + timeStamp;
-
-                out.writeObject(request);
-                ID++;
-
+                System.out.println(request);
+                out.println(request);
                 Thread.sleep(randomTime);
             }
-
-            // Wait for the listen thread to finish before closing the socket
-            listenThread.join();
 
             long endTime = System.currentTimeMillis();
             System.out.println("HYDROGEN THREAD END");
@@ -56,32 +49,6 @@ public class Hydrogen {
             socket.close();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        }
-    }
-
-
-    public class HydrogenListenThread extends Thread {
-        protected Socket socket;
-
-        public HydrogenListenThread(Socket hydrogen) {
-            this.socket = hydrogen;
-        }
-
-        public void run() {
-            try {
-                ObjectInputStream inHydrogen = new ObjectInputStream(socket.getInputStream());
-                while (true) {
-                    try {
-                        String received = (String) inHydrogen.readObject();
-                        System.out.println(received);
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                        return;
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
