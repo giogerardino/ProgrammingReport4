@@ -15,13 +15,13 @@ public class Hydrogen {
 
     public void start() {
         try {
-//            InetAddress address = InetAddress.getByName(SERVER_IP);
             Socket socket = new Socket("localhost", HYDROGEN_PORT);
             System.out.println("Connected to server");
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             Random random = new Random(12345);
 
-            new HydrogenListenThread(socket).start();
+            HydrogenListenThread listenThread = new HydrogenListenThread(socket);
+            listenThread.start(); // Start listening thread
 
             Scanner scanner = new Scanner(System.in);
             int n = 0;
@@ -46,6 +46,9 @@ public class Hydrogen {
                 Thread.sleep(randomTime);
             }
 
+            // Wait for the listen thread to finish before closing the socket
+            listenThread.join();
+
             long endTime = System.currentTimeMillis();
             System.out.println("HYDROGEN THREAD END");
             System.out.println("Runtime: " + (endTime - startTime) + " milliseconds");
@@ -55,6 +58,7 @@ public class Hydrogen {
             e.printStackTrace();
         }
     }
+
 
     public class HydrogenListenThread extends Thread {
         protected Socket socket;

@@ -15,13 +15,13 @@ public class Oxygen {
 
     public void start() {
         try {
-//            InetAddress address = InetAddress.getByName(SERVER_IP);
             Socket socket = new Socket("localhost", OXYGEN_PORT);
             System.out.println("Connected to server");
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             Random random = new Random(12345);
 
-            new OxygenListenThread(socket).start();
+            OxygenListenThread listenThread = new OxygenListenThread(socket);
+            listenThread.start(); // Start listening thread
 
             Scanner scanner = new Scanner(System.in);
             int m = 0;
@@ -45,6 +45,9 @@ public class Oxygen {
 
                 Thread.sleep(randomTime);
             }
+
+            // Wait for the listen thread to finish before closing the socket
+            listenThread.join();
 
             long endTime = System.currentTimeMillis();
             System.out.println("OXYGEN THREAD END");
