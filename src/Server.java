@@ -1,101 +1,122 @@
 import java.io.*;
 import java.net.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Server {
-    private Set<String> hydrogenRequests;
-    private Set<String> oxygenRequests;
-    private Set<String> sentConfirmations;
 
-    public Server() {
-        hydrogenRequests = new HashSet<>();
-        oxygenRequests = new HashSet<>();
-        sentConfirmations = new HashSet<>();
-    }
+    private static final int HYDROGEN_PORT = 50000;
+    private static final int OXYGEN_PORT = 60000;
 
-    public void startServer(int port) {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Server started on port " + port);
+    private ServerSocket hydrogenServerSocket;
+    private ServerSocket oxygenServerSocket;
+
+    private volatile int numHydrogen = 0;
+    private volatile int numOxygen = 0;
+
+    private final Object hydrogenLock = new Object();
+    private final Object oxygenLock = new Object();
+
+    public void start() {
+        try {
+            hydrogenServerSocket = new ServerSocket(HYDROGEN_PORT);
+            oxygenServerSocket = new ServerSocket(OXYGEN_PORT);
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            System.out.println("Server opened at: " + inetAddress.getHostAddress());
+            System.out.println("Server is listening...");
+
             while (true) {
-                Socket clientSocket = serverSocket.accept();
-                new ServerThread(clientSocket, this).start();
+                Socket hydrogenSocket = hydrogenServerSocket.accept();
+                new HydrogenThread(hydrogenSocket).start();
+
+                Socket oxygenSocket = oxygenServerSocket.accept();
+                new OxygenThread(oxygenSocket).start();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    synchronized void receiveBondRequest(String requestId) {
-        char type = requestId.charAt(0);
-        if (type == 'H') {
-            if (hydrogenRequests.contains(requestId)) {
-                System.out.println("Error: Duplicate bond request from " + requestId);
-                return;
+    public void bond(Socket hydrogenSocket, Socket oxygenSocket) {
+        try {
+            ObjectOutputStream hydrogenOut = new ObjectOutputStream(hydrogenSocket.getOutputStream());
+            ObjectOutputStream oxygenOut = new ObjectOutputStream(oxygenSocket.getOutputStream());
+
+            String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+
+            synchronized (hydrogenLock) {
+                numHydrogen--;
+                hydrogenOut.writeObject("bonded, " + timeStamp);
             }
-            hydrogenRequests.add(requestId);
-            checkAndBond();
-        } else if (type == 'O') {
-            if (oxygenRequests.contains(requestId)) {
-                System.out.println("Error: Duplicate bond request from " + requestId);
-                return;
+
+            synchronized (oxygenLock) {
+                numOxygen--;
+                oxygenOut.writeObject("bonded, " + timeStamp);
             }
-            oxygenRequests.add(requestId);
-            checkAndBond();
+
+            System.out.println("Bond formed at: " + timeStamp);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    private void checkAndBond() {
-        if (hydrogenRequests.size() >= 2 && oxygenRequests.size() >= 1) {
-            String hydrogen1 = hydrogenRequests.iterator().next();
-            hydrogenRequests.remove(hydrogen1);
-            String hydrogen2 = hydrogenRequests.iterator().next();
-            hydrogenRequests.remove(hydrogen2);
-            String oxygen = oxygenRequests.iterator().next();
-            oxygenRequests.remove(oxygen);
-
-            if (sentConfirmations.contains(hydrogen1) || sentConfirmations.contains(hydrogen2) || sentConfirmations.contains(oxygen)) {
-                System.out.println("Error: Bond confirmation sent before request");
-                return;
+    public synchronized void receiveBondRequest(String moleculeID) {
+        if (moleculeID.startsWith("H")) {
+            synchronized (hydrogenLock) {
+                numHydrogen++;
             }
-
-            sendBondConfirmation(hydrogen1);
-            sendBondConfirmation(hydrogen2);
-            sendBondConfirmation(oxygen);
+        } else if (moleculeID.startsWith("O")) {
+            synchronized (oxygenLock) {
+                numOxygen++;
+            }
         }
     }
 
-    private void sendBondConfirmation(String requestId) {
-        System.out.println("Sending bond confirmation for " + requestId);
-        sentConfirmations.add(requestId);
-        // Send confirmation message to client
-    }
-
-    public static void main(String[] args) {
-        Server server = new Server();
-        server.startServer(12345); // Choose an available port
-    }
-
-    private static class ServerThread extends Thread {
+    private class HydrogenThread extends Thread {
         private Socket socket;
-        private Server server;
-        public ServerThread(Socket socket, Server server) {
+
+        public HydrogenThread(Socket socket) {
             this.socket = socket;
-            this.server = server;
         }
+
         public void run() {
-            try (
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true)
-            ) {
-                String request;
-                while ((request = in.readLine()) != null) {
-                    server.receiveBondRequest(request); // Call receiveBondRequest of the Server instance
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String input;
+                while ((input = in.readLine()) != null) {
+                    if (input.equals("request")) {
+                        receiveBondRequest("H");
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
 
+    private class OxygenThread extends Thread {
+        private Socket socket;
+
+        public OxygenThread(Socket socket) {
+            this.socket = socket;
+        }
+
+        public void run() {
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String input;
+                while ((input = in.readLine()) != null) {
+                    if (input.equals("request")) {
+                        receiveBondRequest("O");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.start();
     }
 }
