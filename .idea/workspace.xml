@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="727b6172-9b39-4e03-a02e-1b5af0913db1" name="Changes" comment="bond logs are reflected in Hydrogen.java and Oxygen.java">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Hydrogen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Hydrogen.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Oxygen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Oxygen.java" afterDir="false" />
@@ -76,7 +76,7 @@
       <option name="presentableId" value="Default" />
       <updated>1711957607969</updated>
       <workItem from="1711957608988" duration="4261000" />
-      <workItem from="1712015318789" duration="4439000" />
+      <workItem from="1712015318789" duration="9282000" />
     </task>
     <task id="LOCAL-00001" summary=".">
       <option name="closed" value="true" />
@@ -94,7 +94,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711963563638</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="bond logs are reflected in Hydrogen.java and Oxygen.java">
+      <option name="closed" value="true" />
+      <created>1712019798579</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1712019798579</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

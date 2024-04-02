@@ -41,7 +41,6 @@ public class Oxygen {
                 out.println(request);
                 Thread.sleep(randomTime);
             }
-
             String serverResponse;
             int counter = 0;
             while (counter < m && (serverResponse = in.readLine()) != null) {

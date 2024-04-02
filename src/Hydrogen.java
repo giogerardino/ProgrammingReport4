@@ -2,12 +2,12 @@ import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Random;
-import java.util.Scanner;
 
 public class Hydrogen {
     private final int HYDROGEN_PORT = 50000;
     private final String SERVER_IP = "localhost";
     private final int id;
+    private final int N = 2000000;
 
     public Hydrogen(int id) {
         this.id = id;
@@ -21,19 +21,9 @@ public class Hydrogen {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             Random random = new Random();
 
-            Scanner scanner = new Scanner(System.in);
-            int n = 0;
-            do {
-                System.out.println("Enter the number of hydrogen molecules:");
-                System.out.flush();
-                n = scanner.nextInt();
-                if (n <= 0)
-                    System.out.println("Enter a valid number of hydrogen molecules");
-            } while (n <= 0);
-
             long startTime = System.currentTimeMillis();
 
-            for (int ID = 1; ID <= n; ID++) {
+            for (int ID = 1; ID <= N; ID++) {
                 int randomTime = random.nextInt(1000 - 50) + 50;
                 String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());
                 String request = "H" + ID + ", request, " + timeStamp;
@@ -44,7 +34,7 @@ public class Hydrogen {
             }
             String serverResponse;
             int counter = 0;
-            while (counter < n && (serverResponse = in.readLine()) != null) {
+            while (counter < N && (serverResponse = in.readLine()) != null) {
                 System.out.println(serverResponse);
                 counter++;
             }

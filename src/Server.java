@@ -44,36 +44,39 @@ public class Server {
     private class BondThread extends Thread {
         private Socket hydrogenSocket;
         private Socket oxygenSocket;
-    
+
         public BondThread(Socket hydrogenSocket, Socket oxygenSocket) {
             this.hydrogenSocket = hydrogenSocket;
             this.oxygenSocket = oxygenSocket;
         }
-   
+
         public void run() {
             try {
                 BufferedReader hydrogenIn = new BufferedReader(new InputStreamReader(hydrogenSocket.getInputStream()));
                 BufferedReader oxygenIn = new BufferedReader(new InputStreamReader(oxygenSocket.getInputStream()));
-    
+
                 while (!hydrogenSocket.isClosed() && !oxygenSocket.isClosed()) {
                     List<String> hydrogenRequests = new ArrayList<>();
-    
+
                     // Read and process hydrogen requests until at least 2 are received
                     String hydrogenInput;
                     while (hydrogenRequests.size() < 2 && (hydrogenInput = hydrogenIn.readLine()) != null) {
                         System.out.println("Received hydrogen request: " + hydrogenInput);
                         hydrogenRequests.add(hydrogenInput);
                     }
-    
+
                     // Read the oxygen request
                     String oxygenInput = oxygenIn.readLine();
                     System.out.println("Received oxygen request: " + oxygenInput);
-    
+                    System.out.flush();
+
                     // Process the bond if there are enough molecules
                     if (hydrogenRequests.size() >= 2 && oxygenInput != null) {
                         processBond(hydrogenRequests, oxygenInput);
                     } else {
                         System.out.println("Insufficient molecules for bonding");
+                        oxygenSocket.close();
+                        hydrogenSocket.close();
                     }
                 }
             } catch (SocketException e) {
@@ -90,12 +93,12 @@ public class Server {
                 }
             }
         }
-    
+
         private void processBond(List<String> hydrogenRequests, String oxygenInput) {
             // Form bond logic goes here
             String timeStamp = getCurrentTimeStamp();
             System.out.println("Bond formed at: " + timeStamp +"\n");
-    
+
             // Send confirmation to hydrogen
             for (String hydrogenRequest : hydrogenRequests) {
                 try {
@@ -116,7 +119,7 @@ public class Server {
                 e.printStackTrace();
             }
         }
-    
+
         private String getCurrentTimeStamp() {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         }
