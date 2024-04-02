@@ -100,17 +100,17 @@ public class Server {
             for (String hydrogenRequest : hydrogenRequests) {
                 try {
                     PrintWriter hydrogenOut = new PrintWriter(hydrogenSocket.getOutputStream(), true);
-                    hydrogenOut.println(hydrogenRequest + ", bonded, " + timeStamp);
+                    String moleculeID = hydrogenRequest.split(",")[0];
+                    hydrogenOut.println(moleculeID + ", bonded, " + timeStamp);
                     hydrogenOut.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-    
-            // Send confirmation to oxygen
             try {
                 PrintWriter oxygenOut = new PrintWriter(oxygenSocket.getOutputStream(), true);
-                oxygenOut.println(oxygenInput + ", bonded, " + timeStamp);
+                String moleculeID = oxygenInput.split(",")[0]; // Extract the molecule ID from the request
+                oxygenOut.println(moleculeID + ", bonded, " + timeStamp);
                 oxygenOut.flush();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -121,13 +121,6 @@ public class Server {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         }
     }
-    
-    
-    
-    
-    
-    
-    
 
     public synchronized void receiveBondRequest(String moleculeID) {
         if (moleculeID.startsWith("H")) {

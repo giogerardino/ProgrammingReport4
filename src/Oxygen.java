@@ -18,6 +18,7 @@ public class Oxygen {
             Socket socket = new Socket(SERVER_IP, OXYGEN_PORT);
             System.out.println("Connected to server");
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             Random random = new Random();
 
             Scanner scanner = new Scanner(System.in);
@@ -41,8 +42,15 @@ public class Oxygen {
                 Thread.sleep(randomTime);
             }
 
+            String serverResponse;
+            int counter = 0;
+            while (counter < m && (serverResponse = in.readLine()) != null) {
+                System.out.println(serverResponse);
+                counter++;
+            }
+
             long endTime = System.currentTimeMillis();
-            System.out.println("OXYGEN THREAD END");
+            System.out.println("== END ==");
             System.out.println("Runtime: " + (endTime - startTime) + " milliseconds");
 
             socket.close();

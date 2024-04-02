@@ -18,6 +18,7 @@ public class Hydrogen {
             Socket socket = new Socket(SERVER_IP, HYDROGEN_PORT);
             System.out.println("Connected to server");
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             Random random = new Random();
 
             Scanner scanner = new Scanner(System.in);
@@ -41,9 +42,15 @@ public class Hydrogen {
                 out.println(request);
                 Thread.sleep(randomTime);
             }
+            String serverResponse;
+            int counter = 0;
+            while (counter < n && (serverResponse = in.readLine()) != null) {
+                System.out.println(serverResponse);
+                counter++;
+            }
 
             long endTime = System.currentTimeMillis();
-            System.out.println("HYDROGEN THREAD END");
+            System.out.println("== END ==");
             System.out.println("Runtime: " + (endTime - startTime) + " milliseconds");
 
             socket.close();
