@@ -75,22 +75,14 @@ public class Server {
                         processBond(hydrogenRequests, oxygenInput);
                     } else {
                         System.out.println("Insufficient molecules for bonding");
-                        oxygenSocket.close();
-                        hydrogenSocket.close();
+                        this.oxygenSocket.close();
+                        this.hydrogenSocket.close();
                     }
                 }
             } catch (SocketException e) {
-                // Connection was reset, handle gracefully
                 System.out.println("\nConnection reset by client.");
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    hydrogenSocket.close();
-                    oxygenSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         }
 
